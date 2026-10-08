@@ -70,21 +70,57 @@ A polynomial of total degree $d$ over $D$ inputs consists of all monomial basis 
 $$P(D, d) = \binom{D + d}{d} = \frac{(D + d)!}{D! \, d!}$$
 
 ### 3.2 Regularization Formulations
+
 1. **Ridge Regression ($L_2$):**
-   $$J_{\text{Ridge}}(\mathbf{w}) = \frac{1}{2N} \|\mathbf{y} - \mathbf{\Phi} \mathbf{w}\|_2^2 + \alpha \|\mathbf{w}_{1:}\|_2^2$$
-   $$\mathbf{w}_{\text{Ridge}} = (\mathbf{\Phi}^T \mathbf{\Phi} + \alpha \mathbf{I}^*)^{-1} \mathbf{\Phi}^T \mathbf{y}$$
-   where $\mathbf{I}^*$ leaves the bias intercept $w_0$ unpenalized.
+
+The Ridge objective function with unpenalized bias $w_0$ is:
+
+$$
+\mathcal{L}_{\text{Ridge}}(\mathbf{w}) = \frac{1}{2N}\|\mathbf{y} - \mathbf{\Phi}\mathbf{w}\|_2^2 + \alpha\|\mathbf{w}_{1:}\|_2^2
+$$
+
+Setting the gradient to zero yields the closed-form solution:
+
+$$
+\mathbf{w}_{\text{Ridge}} = (\mathbf{\Phi}^T\mathbf{\Phi} + 2N\alpha\mathbf{I}')^{-1}\mathbf{\Phi}^T\mathbf{y}
+$$
+
+where $\mathbf{I}' = \text{diag}(0, 1, 1, \dots, 1) \in \mathbb{R}^{P \times P}$ ensures the bias term $w_0$ remains unpenalized.
 
 2. **Lasso Regression ($L_1$ & Cyclic Coordinate Descent):**
-   $$J_{\text{Lasso}}(\mathbf{w}) = \frac{1}{2N} \|\mathbf{y} - \mathbf{\Phi} \mathbf{w}\|_2^2 + \alpha \|\mathbf{w}_{1:}\|_1$$
-   Solved iteratively via soft-thresholding:
-   $$w_j \leftarrow \frac{S(\rho_j, \alpha N)}{\|\mathbf{\Phi}_{:, j}\|_2^2}, \quad S(\rho, \lambda) = \text{sign}(\rho) \max(0, |\rho| - \lambda)$$
+
+The Lasso objective function is:
+
+$$
+\mathcal{L}_{\text{Lasso}}(\mathbf{w}) = \frac{1}{2N}\|\mathbf{y} - \mathbf{\Phi}\mathbf{w}\|_2^2 + \alpha\|\mathbf{w}_{1:}\|_1
+$$
+
+Optimizing coordinate-wise with respect to weight $w_j$ while fixing $w_{k \neq j}$ yields the update rule:
+
+$$
+w_j \leftarrow \frac{S(\rho_j, \, N\alpha)}{z_j}
+$$
+
+where:
+- Partial residual correlation: $\rho_j = \boldsymbol{\phi}_j^T (\mathbf{y} - \sum_{k \neq j} \boldsymbol{\phi}_k w_k)$
+- Column norm normalization: $z_j = \|\boldsymbol{\phi}_j\|_2^2 = \boldsymbol{\phi}_j^T \boldsymbol{\phi}_j$
+- Soft-thresholding operator: $S(\rho, \lambda) = \text{sign}(\rho)\max(0, |\rho| - \lambda)$
+
+*(For standardized features where $z_j = N$, the update simplifies directly to $w_j \leftarrow \frac{1}{N}S(\rho_j, N\alpha)$).*
 
 3. **Post-Lasso OLS:**
-   $$\mathcal{A} = \{j : |w_j^{\text{Lasso}}| > 0\}, \quad \mathbf{w}_{\mathcal{A}} = (\mathbf{\Phi}_{\mathcal{A}}^T \mathbf{\Phi}_{\mathcal{A}} + \epsilon \mathbf{I})^{-1} \mathbf{\Phi}_{\mathcal{A}}^T \mathbf{y}$$
-   Eliminates $L_1$ shrinkage bias on non-zero weights while maintaining exact sparsity.
 
----
+The active support set of non-zero features selected by Lasso is:
+
+$$
+\mathcal{A} = \{ j : |w_j^{\text{Lasso}}| > 0 \} \cup \{ 0 \}
+$$
+
+The selected submatrix $\mathbf{\Phi}_{\mathcal{A}}$ is refit using Ordinary Least Squares (with Tikhonov damping $\epsilon \mathbf{I}$ where $\epsilon \to 0^+$ for numerical stability) to eliminate shrinkage bias on active coefficients:
+
+$$
+\mathbf{w}_{\mathcal{A}} = (\mathbf{\Phi}_{\mathcal{A}}^T\mathbf{\Phi}_{\mathcal{A}} + \epsilon\mathbf{I})^{-1}\mathbf{\Phi}_{\mathcal{A}}^T\mathbf{y}
+$$---
 
 ## 4. Quickstart & Reproduction
 
