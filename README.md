@@ -1,9 +1,8 @@
 # Machine Learning Assignment: Polynomial Regression
 **Student Name:** Sankalp Gadamsetty  
 **Roll Number:** BT2024182  
-**Institution:** International Institute of Information Technology, Bangalore (IIIT-B)  
-**Course:** Machine Learning (AIT 511)  
-**Repository:** [https://github.com/Sankalp-G2006/polynomial-regression-assignment](https://github.com/Sankalp-G2006/polynomial-regression-assignment)
+**Course:** Machine Learning (AIT 511) 
+**Repository:** [https://github.com/Sankalp-G2006/polynomial_regression](https://github.com/Sankalp-G2006/polynomial_regression)
 
 ---
 
